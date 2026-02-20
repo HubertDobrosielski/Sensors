@@ -36,8 +36,16 @@ private:
 
   // TYMCZASOWE
   void calculate();
-  void checkGeom();
+  bool checkGeom();
+  void drawAxisX();
+  void drawAxisY();
+  void drawChartArea();
+  void ChartUpdate();
+  void drawGrid();
+  void calcAxisX();
+  void calcAxisY();
   bool needCalculate;
+  bool IsEnoughSpaceForChart();
   bool needDraw; // czy jest potrzeba rysowania?
 
 protected:
@@ -48,38 +56,78 @@ protected:
   list<uint> Ylabel; // lista z współrzędnymi y etykiet osi y
 
   CRect setLabelRect(cfloat min, cfloat max);
-  void boardSet(cCSensor *sensor);
+  uint boardSet(cCSensor *sensor);
   void paintName(string name, color color);
   void labelPaint(cfloat min, cfloat max, color c, cuint space);
 
 public:
   CChart(cuint numXpoint, CRect r, color wc, color fc, color txt);
   void paint();
+  void update();
+
+  vector<float> data; // view data (dane widoku)
 };
+
+// class CSensorChart : public CChart
+// {
+// public:
+//   CSensorChart(cCSensor *sensor, cuint numXpoint, CRect r, color wc, color fc, color txt);
+//   void paint();
+
+// private:
+//   cCSensor *sensor;
+//   color sensorColor;
+// };
+
+
 
 class CSensorChart : public CChart
 {
 public:
-  CSensorChart(cCSensor *sensor, cuint numXpoint, CRect r, color wc, color fc, color txt);
+  CSensorChart(cCSensor* sensor, cuint numXpoint, CRect r,
+               color wc, color fc, color txt);
   void paint();
 
 private:
-  cCSensor *sensor;
+  void updateData();   // pull (pobranie)
+  void paintData();    // draw data (rysuj dane)
+
+  cCSensor* sensor;
+  vector<float> buffer;   // view buffer
   color sensorColor;
 };
 
 class CBaseChart : public CChart
 {
 public:
-  CBaseChart(CBase *base, cuint numXpoint, CRect r, color wc, color fc, color txt);
+  CBaseChart(CBase* base, cuint numXpoint, CRect r, color wc, color fc, color txt);
   void paint();
   bool handleEvent(int key);
 
 private:
-  CBase *base;
-  list<color> sensorsColors; // lista kolorów dostępnych dla czujników bazy
+  void updateData();
+  void paintData();
+
+  CBase* base;
+  vector<vector<float>> buffers; // buffer per sensor
+  list<color> sensorsColors;
   list<uint> labelShift;
   int hu = 0;
 };
 
 #endif
+
+
+// class CBaseChart : public CChart
+// {
+// public:
+//   CBaseChart(CBase* base, cuint numXpoint, CRect r, color wc, color fc, color txt);
+//   void paint();
+//   bool handleEvent(int key);
+
+// private:
+//   CBase *base;
+//   list<color> sensorsColors; // lista kolorów dostępnych dla czujników bazy
+//   list<uint> labelShift;
+//   int hu = 0;
+// };

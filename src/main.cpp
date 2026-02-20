@@ -9,8 +9,9 @@
 
 int main(int argc, char *argv[])
 {
-  if (gfx_init())
+  if (gfx_init()) {
     exit(3);
+  }
 
   CWindow *pW1 = new CWindow(CRect(CPoint(100, 100), CPoint(200, 300)));
   CFramedWindow *pW2 = new CFramedWindow(CRect(CPoint(150, 150), CPoint(250, 250)));
@@ -22,14 +23,14 @@ int main(int argc, char *argv[])
   pG->insert(pW3);
   pG->insert(pW4);
 
-  CClock *pClock = new CClock(CRect(CPoint(350, 50), CPoint(300, 300)), GREEN, BLACK);
+  CClock *pClock = new CClock(CRect(CPoint(350, 50), CPoint(100, 100)), GREEN, BLACK);
 
-  CTemperatureSensor temperatureSensor(1, 100);
-  CHumiditySensor humiditySensor(1, 100);
-  CPressureSensor pressureSensor(1, 100);
-  CWindSensor windSensor(1, 100);
-  CInsolationSensor insolationSensor(1, 10000);
-  CTemperatureSensor temperatureSensor2(1, 100);
+  CTemperatureSensor  temperatureSensor(1, 100);
+  CHumiditySensor     humiditySensor(1, 100);
+  CPressureSensor     pressureSensor(1, 100);
+  CWindSensor         windSensor(1, 100);
+  CInsolationSensor   insolationSensor(1, 10000);
+  CTemperatureSensor  temperatureSensor2(1, 100);
 
   CBase base(8);
 
@@ -58,3 +59,5 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
+

@@ -1,0 +1,10 @@
+# build artifacts
+obj/
+*.o
+*.d
+
+# binaries
+a.out
+Sensors
+gm
+

@@ -1,5 +1,9 @@
 #include "clock.h"
 
+#include "clock.h"
+#include <ctime>   // time, localtime, struct tm
+#include <cmath>   // M_PI (jeśli potrzebne)
+
 static Uint32 timer_callback(Uint32 interval, void *param) {
   SDL_Event event;
   SDL_UserEvent userevent;

@@ -1,9 +1,10 @@
 #ifndef __WINSYS_H__
 #define __WINSYS_H__
 
-#include "../lib/primlib.h"
+#include "renderer.h"
 #include "cpoint.h"
 #include <list>
+
 
 #include <string>
 using namespace std;
@@ -18,7 +19,7 @@ public:
   CView() {}
   virtual ~CView() {}
 
-  virtual void paint () = 0;
+  virtual void paint (Renderer &r) = 0;
   virtual bool handleEvent (int key);
   virtual void move (const CPoint & delta) = 0;
 };
@@ -32,7 +33,7 @@ protected:
 public:
   CWindow(CRect r, color wc = DWC) : geom(r), wc(wc) {}
 
-  void paint();
+  void paint(Renderer &r);
   bool handleEvent(int key);
   void move (const CPoint & delta);
 };
@@ -45,7 +46,7 @@ protected:
 public:
   CFramedWindow(CRect r, color wc = DWC, color fc = DFC) : CWindow(r, wc), fc(fc) {}
 
-  void paint();
+  void paint(Renderer &r);
 };
 
 class CInputLine : public CFramedWindow
@@ -54,7 +55,7 @@ class CInputLine : public CFramedWindow
 public:
   CInputLine(CRect r, color wc = DWC, color fc = DFC) : CFramedWindow(r, wc, fc) {}
 
-  void paint();
+  void paint(Renderer &r);
   bool handleEvent(int c);
 };
 
@@ -67,7 +68,7 @@ public:
   CGroup() {}
   ~CGroup();
 
-  void paint();
+  void paint(Renderer &r);
   bool handleEvent(int key);
   void move (const CPoint & delta);
 
@@ -80,11 +81,11 @@ public:
   CDesktop() {};
   ~CDesktop() {};
 
-  void paint();
+  void paint(Renderer &r);
   bool handleEvent(int key);
 
   SDL_Event getEvent();
-  void run();
+  void run(Renderer &r);
 };
 
 #endif

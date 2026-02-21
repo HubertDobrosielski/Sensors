@@ -2,6 +2,8 @@
 #include <iostream>
 using namespace std;
 
+#include "ui_draw.h"
+
 CChart::CChart(cuint numXpoint, CRect r, color wc, color fc, color txt) : CFramedWindow(r, wc, fc), numXpoint(numXpoint)
 {
   rightBoard = leftBoard = topBoard = bottomBoard = DEF_BOARD_SIZE;
@@ -10,8 +12,13 @@ CChart::CChart(cuint numXpoint, CRect r, color wc, color fc, color txt) : CFrame
   geomCAL = geom; // zapisanie geometri okna w celu późniejszego sprawdzania
   needCalculate = true;
   numOfSensorPaint = 0;
+
+  title.text = "Temperature";
+  title.fontSize = 16;
+  title.Color = BLACK;
+
   this->ChartUpdate();
-  this->paint();
+  // this->paint();
 }
 CRect CChart::setLabelRect(cfloat min, cfloat max)
 {
@@ -47,6 +54,8 @@ void dispList(list<uint> l)
 void CChart::ChartUpdate()
 {
   this->chart = CRect(CPoint(geom.topleft.x + leftBoard, geom.topleft.y + topBoard), CPoint(geom.size.x - leftBoard - rightBoard, geom.size.y - topBoard - bottomBoard));
+  area.rect = chart;
+  area.bg = WHITE;
 }
 
 void CChart::paintName(string name, color c)
@@ -113,8 +122,11 @@ void CChart::calcAxisY()
   }
 }
 
-void CChart::paint()
+void CChart::paint(Renderer &r)
 {
+  // layout();
+  ui::draw(title, r);
+
   if (this->IsEnoughSpaceForChart())
   {
     if (this->checkGeom())
@@ -124,10 +136,11 @@ void CChart::paint()
       this->calcAxisY();
     }
 
-    CFramedWindow::paint();
+    CFramedWindow::paint(r);
     drawAxisX();
     drawAxisY();
-    drawChartArea();
+    // drawChartArea();
+    ui::draw(area, r);
     drawGrid();
   }
 }
@@ -152,15 +165,15 @@ CSensorChart::CSensorChart(cCSensor *sensor, cuint numXpoint, CRect r, color wc,
 {
   boardSet(sensor);
 }
-void CSensorChart::paint()
+void CSensorChart::paint(Renderer &r)
 {
-  CChart::paint();
+  CChart::paint(r);
   // CChart::update();
-  paintName(sensor->getName(), sensorColor);
-  labelPaint(sensor->getMin(), sensor->getMax(), sensorColor);
+  // paintName(sensor->getName(), sensorColor);
+  // labelPaint(sensor->getMin(), sensor->getMax(), sensorColor);
 
-  updateData();
-  paintData();
+  // updateData();
+  // paintData();
 }
 
 void CSensorChart::updateData()
@@ -208,22 +221,22 @@ CBaseChart::CBaseChart(CBase *base, cuint numXpoint, CRect r, color wc, color fc
   }
   labelShift.push_front(0); // zapchanie pierwszego elementu, aby przesunąć wszystkie wartości w prawo
 }
-void CBaseChart::paint()
+void CBaseChart::paint(Renderer &r)
 {
-  CChart::paint();
-  // CChart::update();
-  auto itL = labelShift.begin();
-  auto itC1 = sensorsColors.begin();
-  auto itC2 = sensorsColors.begin();
-  for (vector<const CSensor *>::iterator it = base->Sensors.begin(); it != base->Sensors.end(); it++)
-  {
-    paintName((*it)->getName(), *itC1++);
-    labelPaint((*it)->getMin(), (*it)->getMax(), *itC2++, *itL++);
-    numOfSensorPaint++;
-  }
-  numOfSensorPaint = 0;
-  updateData();
-  paintData();
+  CChart::paint(r);
+  // // CChart::update();
+  // auto itL = labelShift.begin();
+  // auto itC1 = sensorsColors.begin();
+  // auto itC2 = sensorsColors.begin();
+  // for (vector<const CSensor *>::iterator it = base->Sensors.begin(); it != base->Sensors.end(); it++)
+  // {
+  //   paintName((*it)->getName(), *itC1++);
+  //   labelPaint((*it)->getMin(), (*it)->getMax(), *itC2++, *itL++);
+  //   numOfSensorPaint++;
+  // }
+  // numOfSensorPaint = 0;
+  // updateData();
+  // paintData();
 }
 
 bool CBaseChart::handleEvent(int key)
@@ -259,29 +272,30 @@ void CBaseChart::updateData()
 
 void CBaseChart::paintData()
 {
-  auto itC = sensorsColors.begin();
+  // auto itC = sensorsColors.begin();
 
-  for (size_t s = 0; s < buffers.size(); ++s)
-  {
-    auto& buf = buffers[s];
-    auto* sen = base->Sensors[s];
-    if (buf.size() < 2) continue;
+  // for (size_t s = 0; s < buffers.size(); ++s)
+  // {
+  //   auto &buf = buffers[s];
+  //   auto *sen = base->Sensors[s];
+  //   if (buf.size() < 2)
+  //     continue;
 
-    float scale = chart.size.y / (sen->getMax() - sen->getMin());
-    auto itX = X.begin();
+  //   float scale = chart.size.y / (sen->getMax() - sen->getMin());
+  //   auto itX = X.begin();
 
-    for (size_t i = 0; i < buf.size() - 1; ++i)
-    {
-      uint x1 = *itX++;
-      uint x2 = *itX;
+  //   for (size_t i = 0; i < buf.size() - 1; ++i)
+  //   {
+  //     uint x1 = *itX++;
+  //     uint x2 = *itX;
 
-      uint y1 = chart.getBottomRight().y -
-                (buf[i]   - sen->getMin()) * scale;
-      uint y2 = chart.getBottomRight().y -
-                (buf[i+1] - sen->getMin()) * scale;
+  //     uint y1 = chart.getBottomRight().y -
+  //               (buf[i] - sen->getMin()) * scale;
+  //     uint y2 = chart.getBottomRight().y -
+  //               (buf[i + 1] - sen->getMin()) * scale;
 
-      gfx_line(x1, y1, x2, y2, *itC);
-    }
-    ++itC;
-  }
+  //     // gfx_line(x1, y1, x2, y2, *itC);
+  //   }
+  //   ++itC;
+  // }
 }

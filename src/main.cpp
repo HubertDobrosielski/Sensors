@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "renderer.h"
 #include <unistd.h>
 
 #include "winsys.h"
@@ -7,11 +8,12 @@
 #include "chart.h"
 #include "sensor.h"
 
+#include "base.h"
+
+
 int main(int argc, char *argv[])
 {
-  if (gfx_init()) {
-    exit(3);
-  }
+  GfxRenderer renderer;   
 
   CWindow *pW1 = new CWindow(CRect(CPoint(100, 100), CPoint(200, 300)));
   CFramedWindow *pW2 = new CFramedWindow(CRect(CPoint(150, 150), CPoint(250, 250)));
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
   d.insert(pChartSensor);
   d.insert(pChartBase);
 
-  d.run();
+  d.run(renderer);
 
   return 0;
 }

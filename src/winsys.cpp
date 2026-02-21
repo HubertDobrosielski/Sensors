@@ -10,8 +10,10 @@ using namespace std;
 //----------------------------------------------------------------------
 // CView methods
 
-bool CView::handleEvent(int key) {
-  switch (key) {
+bool CView::handleEvent(int key)
+{
+  switch (key)
+  {
   case SDLK_UP:
     move(CPoint(0, -10));
     return true;
@@ -28,21 +30,21 @@ bool CView::handleEvent(int key) {
   return false;
 }
 
-
 //----------------------------------------------------------------------
 // CWindow methods
 
-void CWindow::paint() {
-  gfx_filledRect(geom.topleft.x, geom.topleft.y,
-                 geom.topleft.x + geom.size.x - 1,
-                 geom.topleft.y + geom.size.y - 1, wc);
+void CWindow::paint(Renderer& r)
+{
+  r.filledRect(geom,wc);
 }
 
-bool CWindow::handleEvent(int key) {
+bool CWindow::handleEvent(int key)
+{
   if (CView::handleEvent(key))
     return true;
 
-  switch (key) {
+  switch (key)
+  {
   case SDLK_EQUALS:
     geom.size += CPoint(10, 10);
     return true;
@@ -59,26 +61,40 @@ void CWindow::move(const CPoint &delta) { geom.topleft += delta; }
 //----------------------------------------------------------------------
 // CFramedWindow methods
 
-void CFramedWindow::paint() {
-  CWindow::paint();
-  gfx_rect(geom.topleft.x, geom.topleft.y, geom.topleft.x + geom.size.x - 1,
-           geom.topleft.y + geom.size.y - 1, fc);
+void CFramedWindow::paint(Renderer& r)
+{
+  // najpierw tło okna
+  CWindow::paint(r);
+
+  // potem ramka
+  r.rect(geom, fc);
 }
 
 //----------------------------------------------------------------------
 // CInputLine methods
 
-void CInputLine::paint() {
-  CFramedWindow::paint();
-  gfx_textout(geom.topleft.x, geom.topleft.y, text.c_str(), RED);
+void CInputLine::paint(Renderer& r)
+{
+  // tło + ramka
+  CFramedWindow::paint(r);
+
+  // tekst
+  r.text(
+    geom.topleft,
+    text.c_str(),
+    RED
+  );
 }
 
-bool CInputLine::handleEvent(int c) {
+bool CInputLine::handleEvent(int c)
+{
   if (CFramedWindow::handleEvent(c))
     return true;
 
-  if (c == SDLK_BACKSPACE) {
-    if (text.length() > 0) {
+  if (c == SDLK_BACKSPACE)
+  {
+    if (text.length() > 0)
+    {
       text.erase(text.length() - 1);
       return true;
     };
@@ -95,27 +111,33 @@ bool CInputLine::handleEvent(int c) {
 //----------------------------------------------------------------------
 // CGroup methods
 
-void CGroup::paint() {
-  for (list<CView *>::iterator i = children.begin(); i != children.end(); i++)
-    (*i)->paint();
+void CGroup::paint(Renderer& r)
+{
+  for (CView* v : children)
+    v->paint(r);
 }
 
-bool CGroup::handleEvent(int key) {
+bool CGroup::handleEvent(int key)
+{
   if (CView::handleEvent(key))
     return true;
 
   if (!children.empty() && children.back()->handleEvent(key))
     return true;
 
-  if (key == SDLK_PAGEUP) {
-    if (!children.empty()) {
+  if (key == SDLK_PAGEUP)
+  {
+    if (!children.empty())
+    {
       children.push_front(children.back());
       children.pop_back();
     }
     return true;
   }
-  else if (key == SDLK_PAGEDOWN) {
-    if (!children.empty()) {
+  else if (key == SDLK_PAGEDOWN)
+  {
+    if (!children.empty())
+    {
       children.push_back(children.front());
       children.pop_front();
     }
@@ -125,7 +147,8 @@ bool CGroup::handleEvent(int key) {
   return false;
 }
 
-void CGroup::move(const CPoint &delta) {
+void CGroup::move(const CPoint &delta)
+{
 
   for (list<CView *>::iterator i = children.begin(); i != children.end(); i++)
     (*i)->move(delta);
@@ -133,7 +156,8 @@ void CGroup::move(const CPoint &delta) {
 
 void CGroup::insert(CView *v) { children.push_back(v); }
 
-CGroup::~CGroup() {
+CGroup::~CGroup()
+{
   for (list<CView *>::iterator i = children.begin(); i != children.end(); i++)
     delete (*i);
 }
@@ -141,18 +165,21 @@ CGroup::~CGroup() {
 //----------------------------------------------------------------------
 // CDesktop methods
 
-void CDesktop::paint() {
-  gfx_filledRect(0, 0, gfx_screenWidth() - 1, gfx_screenHeight() - 1, DBC);
-
-  CGroup::paint();
+void CDesktop::paint(Renderer& r)
+{
+  r.clear(DBC);
+  CGroup::paint(r);
 }
 
-bool CDesktop::handleEvent(int key) {
+bool CDesktop::handleEvent(int key)
+{
   if (!children.empty() && children.back()->handleEvent(key))
     return true;
 
-  if (key == SDLK_TAB) {
-    if (!children.empty()) {
+  if (key == SDLK_TAB)
+  {
+    if (!children.empty())
+    {
       children.push_front(children.back());
       children.pop_back();
     };
@@ -161,21 +188,23 @@ bool CDesktop::handleEvent(int key) {
   return false;
 }
 
-SDL_Event CDesktop::getEvent() {
+SDL_Event CDesktop::getEvent()
+{
   return gfx_getEvent();
 }
 
-void CDesktop::run() {
-  paint();
-  gfx_updateScreen();
+void CDesktop::run(Renderer &r)
+{
+  while (true)
+  {
+    r.beginFrame(); // frame begin (początek klatki)
 
-  while (1) {
     bool updateNeeded = false;
     SDL_Event event = getEvent();
 
-    if(event.type == SDL_USEREVENT)
+    if (event.type == SDL_USEREVENT)
       updateNeeded = true;
-    else if(event.type == SDL_KEYDOWN)
+    else if (event.type == SDL_KEYDOWN)
     {
       int c = event.key.keysym.sym;
       if (c == 'q')
@@ -183,9 +212,9 @@ void CDesktop::run() {
       updateNeeded = handleEvent(c);
     }
 
-    if(updateNeeded) {
-      paint();
-      gfx_updateScreen();
-    }
+    if (updateNeeded)
+      paint(r); // paint (rysowanie) przez renderer
+
+    r.endFrame(); // frame end (koniec klatki)
   }
 }

@@ -1,6 +1,7 @@
 #ifndef __CHART_H__
 #define __CHART_H__
 
+#include "renderer.h"
 #include "winsys.h"
 #include "sensor.h"
 #include "base.h"
@@ -8,6 +9,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
+
 using namespace std;
 
 #define TEXT_HIGHT 8     // wysokość tekstu
@@ -23,6 +26,33 @@ typedef const float cfloat;
 typedef const CBase cCBase;
 typedef const CSensor cCSensor;
 
+
+
+struct Title
+{
+  std::string text;
+  CPoint pos;
+  int fontSize;
+  color Color;
+};
+
+struct Axis
+{
+  std::vector<CPoint> line;  // zwykle 2 punkty
+  std::vector<CPoint> ticks; // kreski
+};
+
+
+struct ChartArea {
+  CRect rect;
+  color bg;
+};
+
+struct Grid {
+  std::vector<std::pair<CPoint,CPoint>> lines;
+};
+
+
 class CChart : public CFramedWindow
 {
 private:
@@ -33,6 +63,14 @@ private:
   uint bottomBoard; // dolna część obramowania
   color txt;        // kolor napisów, osi itp
   cuint numXpoint;  // ilość punktów na osi x
+
+  Title title;
+  Axis xAxis;
+  Axis yAxis;
+  Grid grid;
+  ChartArea area;
+
+  // void layout();
 
   // TYMCZASOWE
   void calculate();
@@ -62,53 +100,41 @@ protected:
 
 public:
   CChart(cuint numXpoint, CRect r, color wc, color fc, color txt);
-  void paint();
+  // void paint(Renderer &r);
+  void paint(Renderer &r);
   void update();
 
   vector<float> data; // view data (dane widoku)
 };
 
-// class CSensorChart : public CChart
-// {
-// public:
-//   CSensorChart(cCSensor *sensor, cuint numXpoint, CRect r, color wc, color fc, color txt);
-//   void paint();
-
-// private:
-//   cCSensor *sensor;
-//   color sensorColor;
-// };
-
-
-
 class CSensorChart : public CChart
 {
 public:
-  CSensorChart(cCSensor* sensor, cuint numXpoint, CRect r,
+  CSensorChart(cCSensor *sensor, cuint numXpoint, CRect r,
                color wc, color fc, color txt);
-  void paint();
+  void paint(Renderer &r);
 
 private:
-  void updateData();   // pull (pobranie)
-  void paintData();    // draw data (rysuj dane)
+  void updateData(); // pull (pobranie)
+  void paintData();  // draw data (rysuj dane)
 
-  cCSensor* sensor;
-  vector<float> buffer;   // view buffer
+  cCSensor *sensor;
+  vector<float> buffer; // view buffer
   color sensorColor;
 };
 
 class CBaseChart : public CChart
 {
 public:
-  CBaseChart(CBase* base, cuint numXpoint, CRect r, color wc, color fc, color txt);
-  void paint();
+  CBaseChart(CBase *base, cuint numXpoint, CRect r, color wc, color fc, color txt);
+  void paint(Renderer &r);
   bool handleEvent(int key);
 
 private:
   void updateData();
   void paintData();
 
-  CBase* base;
+  CBase *base;
   vector<vector<float>> buffers; // buffer per sensor
   list<color> sensorsColors;
   list<uint> labelShift;
@@ -116,18 +142,3 @@ private:
 };
 
 #endif
-
-
-// class CBaseChart : public CChart
-// {
-// public:
-//   CBaseChart(CBase* base, cuint numXpoint, CRect r, color wc, color fc, color txt);
-//   void paint();
-//   bool handleEvent(int key);
-
-// private:
-//   CBase *base;
-//   list<color> sensorsColors; // lista kolorów dostępnych dla czujników bazy
-//   list<uint> labelShift;
-//   int hu = 0;
-// };
